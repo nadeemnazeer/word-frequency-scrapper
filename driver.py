@@ -43,7 +43,7 @@ def get_visible_tag(element):
     return True
 
 
-def get_freq_words(url):
+def get_freq_words(url, ngram=1):
     body = get_page_html(url)
     body = body.replace("<br />","")
     soup = BeautifulSoup(body, 'html.parser')
@@ -57,7 +57,7 @@ def get_freq_words(url):
 
     wordlist = []
     for sentence in sentences:
-        wordlist.extend(compose_ngrams(sentence, 2))
+        wordlist.extend(compose_ngrams(sentence, ngram))
     wordfreq = [wordlist.count(w) for w in wordlist]
     lt = set(zip(wordlist, wordfreq))
     sorted_by_freq = sorted(lt, key=lambda tup:tup[1], reverse=True)
@@ -67,6 +67,6 @@ def get_freq_words(url):
     
 
     
-get_freq_words('https://www.314e.com/')
+get_freq_words('https://www.314e.com/',3)
 #Test data to check against view:source via browser
 #[('know more', 6), ('healthcare it', 5), ('cures act', 5), ('ehr help', 4), ('go live', 4)
