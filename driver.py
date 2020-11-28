@@ -13,7 +13,7 @@ class FreqScrapper:
         self.url_visited = []
 
         
-    def get_page_html(self,url):
+    def _get_page_html(self,url):
         try:
             print("Fetching..",url)
             payload = {}
@@ -28,7 +28,7 @@ class FreqScrapper:
         except Exception as e:
             return ""
 
-    def clean_normalize_string(self,string):
+    def _clean_normalize_string(self,string):
         #find and replace alphanumeric chars with single spaces
         string = re.sub(r'[^a-zA-Z0-9\s]', ' ', string)
         return string.lower()
@@ -36,7 +36,7 @@ class FreqScrapper:
 
     def compose_ngrams(self, string, n):
 
-        string = self.clean_normalize_string(string)
+        string = self._clean_normalize_string(string)
 
         #Remove empty tokens
         tokens = list(filter(None, string.split(" ")))
@@ -48,7 +48,7 @@ class FreqScrapper:
         return [" ".join(ngram) for ngram in ngrams]
 
 
-    def get_visible_tag(self,element):
+    def _get_visible_tag(self,element):
         if element.parent.name in ['style', 'script', 'head', 'title', 'meta','[document]']:
             return False
         if isinstance(element, Comment):
@@ -68,13 +68,13 @@ class FreqScrapper:
     def get_sentence_ngrams_list(self,url, level=1):
         self.url_visited.append(url)
         ngramlist = []
-        body = self.get_page_html(url)
+        body = self._get_page_html(url)
         body = body.replace("<br />","")
         soup = BeautifulSoup(body, 'html.parser')
         #print(get_internal_links(soup))
 
         texts = soup.findAll(text=True)
-        texts_visible_tags = filter(self.get_visible_tag, texts)
+        texts_visible_tags = filter(self._get_visible_tag, texts)
         sentences = []
         for text in  filter(None, texts_visible_tags):
             sub_sentences = text.strip().lower().split(".")
@@ -102,8 +102,8 @@ class FreqScrapper:
         return sorted_by_freq[:self.top]
     
     
-fs = FreqScrapper('https://www.bing.com/',["bing.com"], ngram=2,top=10, max_level=1)
+#fs = FreqScrapper('https://www.bing.com/',["bing.com"], ngram=2,top=10, max_level=1)
     
-fs.get_freq_words()
+#fs.get_freq_words()
 #Test data to check against view:source via browser
 #[('know more', 6), ('healthcare it', 5), ('cures act', 5), ('ehr help', 4), ('go live', 4)
