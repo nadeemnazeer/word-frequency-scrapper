@@ -42,7 +42,8 @@ class FreqScrapServicer(FreqScrapServicer):
         fw = fs.get_freq_words(ngrams,top,max_level) 
         results = []
         for t in fw:
-            results.append(Result(word=t[0], freq=t[1]))
+            results.append(Result(word=" ".join(t[0]), freq=t[1]))
+
         response = Response()
         response.results.extend(results)
         return response
