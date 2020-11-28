@@ -18,9 +18,8 @@ class FreqScrapper:
         self.url = url
         self.scrap_domains = scrap_domains
         self.url_visited = []
-        self.master_sentence_list = []
-        self.master_ngramlist = []
         self.level_counter=1
+        self.freq_dict = {}
 
         
     def _get_page_html(self,url):
@@ -150,11 +149,21 @@ class FreqScrapper:
 
         texts = soup.findAll(text=True)
         texts_visible_tags = filter(self._is_visible_tag, texts)
+        page_sentences = []
         for text in  filter(None, texts_visible_tags):
             sub_sentences = text.strip().lower().split(".") #Split on fullstop, to generate n-grams for each sentence and avoid geenrating ngrams across teh paras across different section
             sub_sentences = [s for s in filter(None,sub_sentences )]
-            self.master_sentence_list.extend(sub_sentences)
-
+            page_sentences.extend(sub_sentences)
+        raw = " ".join(page_sentences)
+        logging.info('Computing ngram frequency for url {} ..'.format(url))
+        fdist = self._compose_ngrams(raw, ngram)
+        for k,v in fdist.items():
+            word = k
+            freq = v
+            if word not in self.freq_dict:
+                self.freq_dict[word] = freq
+            else:
+                self.freq_dict[word] += freq
         links =  self._find_filter_links(soup,self.scrap_domains)
         if len(links) > 0:
             self.level_counter += 1
@@ -163,9 +172,9 @@ class FreqScrapper:
                 return ngramlist
         for link in links:
             if link not in self.url_visited:
-                self.master_sentence_list.extend(self._get_master_sentence_list(link,ngram,top,max_level))
+                self._get_master_sentence_list(link,ngram,top,max_level)
                 
-        return self.master_sentence_list
+        return self.freq_dict
 
 
 
@@ -185,12 +194,13 @@ class FreqScrapper:
         reverse = True
         if sort == "asc":
             reverse=False
-        master_sentence_list = self._get_master_sentence_list(self.url, ngram,top,max_level)
-        raw = " ".join(self.master_sentence_list)
-        logging.info('Computing ngram frequency ..')
-        fdist = self._compose_ngrams(raw, ngram)
+        self._get_master_sentence_list(self.url, ngram,top,max_level)
         
-        sorted_by_freq = sorted( fdist.items() , key=lambda tup:tup[1],reverse = reverse )
+        # raw = " ".join(self.master_sentence_list)
+        # logging.info('Computing ngram frequency ..')
+        # fdist = self._compose_ngrams(raw, ngram)
+        
+        sorted_by_freq = sorted( self.freq_dict.items() , key=lambda tup:tup[1],reverse = reverse )
         
         return sorted_by_freq[:top]
 
