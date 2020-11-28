@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
 import re
+import argparse
 
 class FreqScrapper:
     """ 
@@ -176,10 +177,26 @@ class FreqScrapper:
         unique_ngram_freq = set(zip(sentence_ngrams_list, ngramfreq))
         sorted_by_freq = sorted(unique_ngram_freq, key=lambda tup:tup[1],reverse = reverse )
         return sorted_by_freq[:top]
-    
-    
-#fs = FreqScrapper('https://www.bing.com/',["bing.com"], ngram=2,top=10, max_level=1)
-    
-#fs.get_freq_words()
-#Test data to check against view:source via browser
-#[('know more', 6), ('healthcare it', 5), ('cures act', 5), ('ehr help', 4), ('go live', 4)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Tool to scrap any website and fetch top ngrams with their frequency.")
+
+    parser.add_argument('--url',type=str, help='Base url to scrap.', required=True)
+    parser.add_argument('--scrap_domains',type=str,help='Comma seperated list of domains to restrict scraping and cralwing to.', required=True)
+    parser.add_argument('--ngrams',type=int, help='ngrams value', required=True)
+    parser.add_argument('--top',type=int, help='Top limit', required=True)
+    parser.add_argument('--max_level',type=int, help='Max level to cralw & scrap', required=True)
+
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+
+    arguments = parser.parse_args()
+    url = arguments.url
+    scrap_domains = arguments.scrap_domains.split(",")
+    ngrams = arguments.ngrams
+    top = arguments.top
+    max_level = arguments.max_level
+    fs = FreqScrapper(url,scrap_domains)
+    print(fs.get_freq_words(ngrams,top, max_level))
+    #Test data to check against view:source via browser
+    #[('know more', 6), ('healthcare it', 5), ('cures act', 5), ('ehr help', 4), ('go live', 4)
