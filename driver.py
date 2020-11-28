@@ -3,7 +3,9 @@ from bs4.element import Comment
 import requests
 import re
 import argparse
-
+import logging
+import nltk
+logging.basicConfig(level=logging.INFO)
 class FreqScrapper:
     """ 
     This is a class for Ngram frequency scrapper. 
@@ -16,6 +18,9 @@ class FreqScrapper:
         self.url = url
         self.scrap_domains = scrap_domains
         self.url_visited = []
+        self.master_sentence_list = []
+        self.master_ngramlist = []
+        self.level_counter=1
 
         
     def _get_page_html(self,url):
@@ -29,7 +34,6 @@ class FreqScrapper:
         string: Returns the fetched page html 
         """
         try:
-            print("Fetching..",url)
             payload = {}
             #Set headers - so as not to be blocked
             headers = {
@@ -41,6 +45,7 @@ class FreqScrapper:
 
             return response.text
         except Exception as e:
+            logging.error("Error: {} ".format(e))
             return ""
 
     def _clean_normalize_string(self,string):
@@ -58,7 +63,7 @@ class FreqScrapper:
         return string.lower()
 
 
-    def _compose_ngrams(self, string, n):
+    def _compose_ngrams(self, raw, n):
         """ 
         Generate ngrams from the string. 
     
@@ -69,16 +74,20 @@ class FreqScrapper:
         Returns: 
         list: Returns list of n-grams
         """
-        string = self._clean_normalize_string(string)
+        
+        raw = self._clean_normalize_string(raw)
+        from nltk.util import ngrams    
 
-        #Remove empty tokens
-        tokens = list(filter(None, string.split(" ")))
+        tokens = nltk.word_tokenize(raw)
 
+        #Create your ngrams
+        ngs = ngrams(tokens, n)
 
-        # Use the zip function to help us generate n-grams
-        # Concatentate the tokens into ngrams and return
-        ngrams = zip(*[tokens[i:] for i in range(n)])
-        return [" ".join(ngram) for ngram in ngrams]
+        #compute frequency distribution for all the bigrams in the text
+        fdist = nltk.FreqDist(ngs)
+
+        return fdist
+
 
 
     def _is_visible_tag(self,element):
@@ -113,14 +122,16 @@ class FreqScrapper:
         for link in soup.find_all('a', href=True):
             href = link['href']
             for domain in scrap_domains:
+                if 'blog' in href:
+                    continue
                 if domain in href:
                     link_list.add(link['href'])
         return link_list
 
     
-    def _get_sentence_ngrams_list(self,url,ngram,top,max_level,level_counter=1):
+    def _get_master_sentence_list(self,url,ngram,top,max_level):
         """ 
-        Generates the list of ngrams from individual sentences. 
+        Generates the list of individual sentences for ngram generation. 
     
         Parameters: 
         url (string): url to fetch content from
@@ -132,27 +143,29 @@ class FreqScrapper:
         self.url_visited.append(url)
         ngramlist = []
         body = self._get_page_html(url)
+        logging.info('Fetched {} , Level: {}'.format(url, self.level_counter))
         body = body.replace("<br />","") #Ignore html line breaks to let BeautifulSoup ignore it as different element/para 
         soup = BeautifulSoup(body, 'html.parser')
         #print(_find_filter_links(soup))
 
         texts = soup.findAll(text=True)
         texts_visible_tags = filter(self._is_visible_tag, texts)
-        sentences = []
         for text in  filter(None, texts_visible_tags):
             sub_sentences = text.strip().lower().split(".") #Split on fullstop, to generate n-grams for each sentence and avoid geenrating ngrams across teh paras across different section
-            sentences.extend(sub_sentences)
+            sub_sentences = [s for s in filter(None,sub_sentences )]
+            self.master_sentence_list.extend(sub_sentences)
 
-        for sentence in sentences:
-            ngramlist.extend(self._compose_ngrams(sentence, ngram))
-        for link in self._find_filter_links(soup,self.scrap_domains):
-            if level_counter >= max_level:
+        links =  self._find_filter_links(soup,self.scrap_domains)
+        if len(links) > 0:
+            self.level_counter += 1
+            if self.level_counter == max_level+1:
+                self.level_counter = 1
                 return ngramlist
-            else:
-                level_counter += 1
-                if link not in self.url_visited:
-                    ngramlist.extend(self._get_sentence_ngrams_list(link,ngram,top,max_level,level_counter))
-        return ngramlist
+        for link in links:
+            if link not in self.url_visited:
+                self.master_sentence_list.extend(self._get_master_sentence_list(link,ngram,top,max_level))
+                
+        return self.master_sentence_list
 
 
 
@@ -172,10 +185,13 @@ class FreqScrapper:
         reverse = True
         if sort == "asc":
             reverse=False
-        sentence_ngrams_list = self._get_sentence_ngrams_list(self.url, ngram,top,max_level)
-        ngramfreq = [sentence_ngrams_list.count(ngram) for ngram in sentence_ngrams_list]
-        unique_ngram_freq = set(zip(sentence_ngrams_list, ngramfreq))
-        sorted_by_freq = sorted(unique_ngram_freq, key=lambda tup:tup[1],reverse = reverse )
+        master_sentence_list = self._get_master_sentence_list(self.url, ngram,top,max_level)
+        raw = " ".join(self.master_sentence_list)
+        logging.info('Computing ngram frequency ..')
+        fdist = self._compose_ngrams(raw, ngram)
+        
+        sorted_by_freq = sorted( fdist.items() , key=lambda tup:tup[1],reverse = reverse )
+        
         return sorted_by_freq[:top]
 
 
@@ -197,6 +213,7 @@ if __name__ == "__main__":
     top = arguments.top
     max_level = arguments.max_level
     fs = FreqScrapper(url,scrap_domains)
-    print(fs.get_freq_words(ngrams,top, max_level))
+    for row in fs.get_freq_words(ngrams,top, max_level):
+        print(" ".join(row[0]),row[1] )
     #Test data to check against view:source via browser
     #[('know more', 6), ('healthcare it', 5), ('cures act', 5), ('ehr help', 4), ('go live', 4)
