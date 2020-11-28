@@ -4,6 +4,13 @@ import requests
 import re
 
 class FreqScrapper:
+    """ 
+    This is a class for Ngram frequency scrapper. 
+      
+    Attributes: 
+        url (string): The base url to scrap. 
+        scrap_domains (list of strings): domain to restrict the scrapping to. 
+    """
     def __init__(self, url,scrap_domains):
         self.url = url
         self.scrap_domains = scrap_domains
