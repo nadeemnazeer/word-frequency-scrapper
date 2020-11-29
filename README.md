@@ -117,9 +117,10 @@ Entry class/function to code:
     rows = fs.get_freq_words(ngrams,top, max_level)
 
 ## TODO(s):
-- Not tested on AJAX/ASP Pages  
-- OCR for content that is put as images on the website
-- Stopwords
-- TFIDF - to get the actual sense of what is mentioned as important on page  
--   There can be other terms of same weight as that of last one - but we are showing only 10
-- F1 Scoring to get the sense of how is our extraction doing.
+> - Not tested on AJAX/ASP Pages  
+> - OCR for content that is put as images on the website
+> - Stopwords
+> - TFIDF - to get the actual sense of what is mentioned as important on page  
+> -   There can be other terms of same weight as that of last one - but we are showing only 10
+> - F1 Scoring to get the sense of how is our extraction doing.
+> - Multiprocessing
