@@ -9,20 +9,11 @@ package freqscrap;
 
 // Interface exported by the server.
 service FreqScrap {
-  // A simple RPC.
-  //
-  // Obtains the feature at a given position.
-  //
-  // A feature with an empty name is returned if there's no feature at the given
-  // position.
+
   rpc GetFreq(Request) returns (Response) {}
 
 }
 
-// Points are represented as latitude-longitude pairs in the E7 representation
-// (degrees multiplied by 10**7 and rounded to the nearest integer).
-// Latitudes should be in the range +/- 90 degrees and longitude should be in
-// the range +/- 180 degrees (inclusive).
 message Request {
   string url = 1;
   string scrap_domains = 2;

@@ -1,6 +1,6 @@
 from unittest import TestCase
  
-from driver import FreqScrapper
+from core import FreqScrapper
  
 class FreqScrapperTest(TestCase):
  

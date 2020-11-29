@@ -12,8 +12,8 @@ Tool to scrap any website and fetch top ngrams with their frequency.
 
 **Argument(s) description:**
 
- - **--url**: For ignoring any external url links; provide a comma separated list of domains to restrict scraping and crawling to. 
- - **--scrap_domains**: Base url to scrap. 
+ - **--url**: Base url to scrap. 
+ - **--scrap_domains**: For ignoring any external url links; provide a comma separated list of domains to restrict scraping and crawling to. 
  - **--ngrams**: ngrams value, put **ngrams = 1**  for for seeing consolidated top 10 frequent words and put **ngrams = 2** for the top 10 frequent word pairs (two words in the same order) along with their frequency.
  - **--top**: Top limit to return, e.g: 10 to return top to words.
  - **--max_level**: Max level to crawl & scrap; maximum number of levels you want to expand for urls within a url.

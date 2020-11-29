@@ -15,10 +15,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Tool to scrap any website and fetch top ngrams with their frequency. e.g: python grpc_client.py --url="https://www.washingtonpost.com/" --scrap_domains="washingtonpost.com"  --ngram=1 --top=10 --max_level=4')
 
     parser.add_argument('--url',type=str, help='Base url to scrap.', required=True)
-    parser.add_argument('--scrap_domains',type=str,help='Comma seperated list of domains to restrict scraping and cralwing to.', required=True)
+    parser.add_argument('--scrap_domains',type=str,help='For ignoring any external url links; provide a comma separated list of domains to restrict scraping and crawling to.', required=True)
     parser.add_argument('--ngrams',type=int, help='ngrams value', required=True)
-    parser.add_argument('--top',type=int, help='Top limit', required=True)
-    parser.add_argument('--max_level',type=int, help='Max level to cralw & scrap', required=True)
+    parser.add_argument('--top',type=int, help='Top limit to return, e.g: 10 to return top to words.', required=True)
+    parser.add_argument('--max_level',type=int, help='Max level to crawl & scrap; maximum number of levels you want to expand for urls within a url.', required=True)
 
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
 
