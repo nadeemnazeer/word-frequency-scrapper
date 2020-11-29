@@ -1,3 +1,4 @@
+
 #  word-frequency-scrapper
 
 Tool to scrap any website and fetch top ngrams with their frequency. 
@@ -44,22 +45,12 @@ It will show all the information needed to run:
 
 ## Example output(s):
 With params: --url="https://www.314e.com/" --scrap_domains="314e.com"  --ngram=2 --top=10 --max_level=4
-
+**For the top 10 frequent word pairs:**
     
     INFO:root:Fetched https://www.314e.com/ , Level: 1
     INFO:root:Computing ngram frequency for url https://www.314e.com/ ..
-    INFO:root:Fetched https://www.314e.com/products/speki-ehr-help/ , Level: 2
-    INFO:root:Computing ngram frequency for url https://www.314e.com/products/speki-ehr-help/ ..
-    INFO:root:Fetched https://www.314e.com/why-314e/apply-online/ , Level: 3
-    INFO:root:Computing ngram frequency for url https://www.314e.com/why-314e/apply-online/ ..
     INFO:root:Fetched https://www.314e.com/services/healthcare-it-staff-augmentation/ , Level: 4
     ...
-    ...
-    INFO:root:Computing ngram frequency for url https://www.314e.com/success-stories/business-intelligence/ ..
-    INFO:root:Fetched https://www.314e.com/success-stories/go-live/ , Level: 3
-    INFO:root:Computing ngram frequency for url https://www.314e.com/success-stories/go-live/ ..
-    INFO:root:Fetched https://www.314e.com/success-stories/revenue-cycle/ , Level: 4
-    INFO:root:Computing ngram frequency for url https://www.314e.com/success-stories/revenue-cycle/ ..
     cures act 156
     healthcare it 127
     cloud adoption 110
@@ -72,7 +63,8 @@ With params: --url="https://www.314e.com/" --scrap_domains="314e.com"  --ngram=2
     muspell automaton 84
 
 
-For max_level=4 and ngrams=1
+**For for seeing consolidated top 10 frequent words:** 
+With params: --url="https://www.314e.com/" --scrap_domains="314e.com"  --ngram=1 --top=10 --max_level=4
 
     and 781
     data 574
@@ -115,3 +107,19 @@ e.g:
 
 >   1. Arguments will remain same as that of standalone run as shown above.
 >   2. You will need to install dependencies to run this client.
+
+## Code description:
+
+**Core logic of the app:** https://github.com/nadeemnazeer/word-frequency-scrapper/blob/develop/core.py
+Entry class/function to code:
+
+    fs = FreqScrapper(url,scrap_domains)
+    rows = fs.get_freq_words(ngrams,top, max_level)
+
+## TODO(s):
+- Not tested on AJAX/ASP Pages  
+- OCR for content that is put as images on the website
+- Stopwords
+- TFIDF - to get the actual sense of what is mentioned as important on page  
+-   There can be other terms of same weight as that of last one - but we are showing only 10
+- F1 Scoring to get the sense of how is our extraction doing.
